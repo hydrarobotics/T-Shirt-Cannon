@@ -1,0 +1,9 @@
+[
+  {
+    "artifact": "frcJava (in project T-Shirt Cannon)",
+    "target": "roborio",
+    "debugfile": "frcJava_roborio.debugconfig",
+    "project": "T-Shirt Cannon",
+    "language": "java"
+  }
+]

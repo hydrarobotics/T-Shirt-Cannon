@@ -7,33 +7,36 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.IterativeRobot;
+import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.GenericHID.Hand;
+import edu.wpi.first.wpilibj.Relay.Value;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.Talon;
-import edu.wpi.first.wpilibj.Joystick.AxisType;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.Relay;
 
 /**
  * The VM is configured to automatically run this class, and to call the
- * functions corresponding to each mode, as described in the IterativeRobot
+ * functions corresponding to each mode, as described in the TimedRobot
  * documentation. If you change the name of this class or the package after
  * creating this project, you must also update the build.gradle file in the
  * project.
  */
-public class Robot extends IterativeRobot {
+public class Robot extends TimedRobot {
   private static final String kDefaultAuto = "Default";
   private static final String kCustomAuto = "My Auto";
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
-  Joystick driver = new Joystick(0);
+  Joystick driver = new Joystick(2);
   Joystick armDriver = new Joystick(1);
+  XboxController xboxController = new XboxController(0);
 
   Talon rMotor = new Talon(0);
   Talon lMotor = new Talon(1);
@@ -41,12 +44,12 @@ public class Robot extends IterativeRobot {
   
   Spark actuator = new Spark(2);
 
-  Compressor compressor = new Compressor(0);
-  boolean compressing = compressor.enabled();
+  Relay compressor = new Relay(0);
+  //boolean compressing = compressor.enabled();
+  Relay compressor2 = new Relay(1);
+  //boolean compressing2 = compressor.enabled();
   
-  Solenoid solenoid = new Solenoid(1);
-  
-
+  Relay solenoid = new Relay(2);
 
   /**
    * This function is run when the robot is first started up and should be
@@ -85,8 +88,7 @@ public class Robot extends IterativeRobot {
   @Override
   public void autonomousInit() {
     m_autoSelected = m_chooser.getSelected();
-    // autoSelected = SmartDashboard.getString("Auto Selector",
-    // defaultAuto);
+    // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
   }
 
@@ -111,24 +113,28 @@ public class Robot extends IterativeRobot {
    */
   @Override
   public void teleopPeriodic() {
-    cannon.tankDrive(driver.getRawAxis(1), driver.getRawAxis(5));
+    cannon.tankDrive(-xboxController.getY(Hand.kLeft), -xboxController.getY(Hand.kRight));
     cannon.setMaxOutput(1);
 
-    if(driver.getTopPressed()) {
-      compressor.start();
+    if(xboxController.getAButton()) {
+      compressor.set(Value.kOn);
+      compressor2.set(Value.kOn);
+    } else {
+      compressor.set(Value.kOff);
+      compressor2.set(Value.kOff);
     }
 
-    if(driver.getTopReleased()) {
-      compressor.stop();
-    }
 
-    if(driver.getTrigger()) {
-      solenoid.set(true);
+    //if(xboxController.getAButtonReleased()) {
+    //  compressor.stop();
+    //  compressor2.stop();
+    //}
+
+    if(xboxController.getBumper(Hand.kLeft)) {
+      solenoid.set(Value.kOn);
     }else {
-      solenoid.set(false);
+      solenoid.set(Value.kOff);
     }
-
-    actuator.set(armDriver.getY());
   }
 
   /**
